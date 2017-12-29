@@ -153,12 +153,18 @@ class BARSlimeDotView_Swift: UIView {
         UIView.animate(withDuration: 0.25, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0, options: UIViewAnimationOptions.beginFromCurrentState, animations: {
             CATransaction.begin()
             CATransaction.setDisableActions(true)
-            self.moveDot.position = CGPoint(x: self.frame.width/2, y: self.frame.height/2)
+            self.moveDot.position = CGPoint(x: (self.frame.width/2-self.moveDot.position.x)*0.25+self.frame.width/2, y: (self.frame.height/2-self.moveDot.position.y)*0.25+self.frame.size.height/2)
             self.shapLayer.isHidden = true
+            self.fixedDot.isHidden = true
             self.moveDot.backgroundColor = BARThemeColor.cgColor
             CATransaction.commit()
         }) { (finished) in
-            self.fixedDot.isHidden = false
+            UIView.animate(withDuration: 0.1, delay: 0, usingSpringWithDamping: 0.1, initialSpringVelocity: 0.3, options: UIViewAnimationOptions.curveEaseIn, animations: {
+                self.moveDot.position = CGPoint(x: self.frame.width/2, y: self.frame.height/2)
+            }, completion: { (finis) in
+                self.fixedDot.isHidden = false
+            })
+
         }
     }
     

@@ -12,6 +12,7 @@
 #define MOVEDOT_W          30.0f
 #define FIXEDOT_SCALE_MIN  0.25  //允许的最小尺寸占 TRAILDOT_W_MAX 的比例
 #define MAXDISTANCE        180
+//#define <#macro#>
 
 @interface BARSlimeDotView()
 
@@ -169,13 +170,19 @@
                      animations: ^{
                          [CATransaction begin];
                          [CATransaction setDisableActions:YES];
-                         self.moveDot.position = CGPointMake(self.frame.size.width/2, self.frame.size.height/2);
+                         self.moveDot.position = CGPointMake((self.frame.size.width/2-self.moveDot.position.x)*0.25+self.frame.size.width/2, (self.frame.size.height/2-self.moveDot.position.y)*0.25+self.frame.size.height/2);
                          self.shapLayer.hidden = YES;
+                         self.fixedDot.hidden = YES;
                          self.moveDot.backgroundColor = BARThemeColor.CGColor;
                          [CATransaction commit];
                      }
                      completion: ^(BOOL finished) {
-                         self.fixedDot.hidden = NO;
+                         [UIView animateWithDuration:0.1f delay:0 usingSpringWithDamping:0.1 initialSpringVelocity:0.3 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                             self.moveDot.position = CGPointMake(self.frame.size.width/2, self.frame.size.width/2);
+                         } completion:^(BOOL finished) {
+                             self.fixedDot.hidden = NO;
+                         }];
+                         
                      }];
 }
 
