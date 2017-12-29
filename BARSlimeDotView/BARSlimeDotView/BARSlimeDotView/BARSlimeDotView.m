@@ -20,6 +20,7 @@
 @property (nonatomic, strong) CALayer *fixedDot;
 @property (nonatomic, strong) CAShapeLayer *shapLayer;
 
+@property (nonatomic,getter=isExceedinged) BOOL exceedinged;
 
 @end
 
@@ -93,6 +94,7 @@
 
 #pragma mark - 拖动手势
 - (void) panMoveDot: (UIPanGestureRecognizer *) panGesture {
+    
     switch (panGesture.state) {
         case UIGestureRecognizerStateChanged: {
             // 记录手势位置
@@ -115,17 +117,23 @@
                 scale = MAX(FIXEDOT_SCALE_MIN, scale);
                 [CATransaction begin];
                 [CATransaction setDisableActions:YES];
-                self.fixedDot.hidden = NO;
+                
                 [self.fixedDot setAffineTransform:CGAffineTransformMakeScale(scale, scale)];
                 [CATransaction commit];
+                if (self.isExceedinged) {
+                    [self reloadBeziePath];
+                    self.fixedDot.hidden = NO;
+                }
                 
-                [self reloadBeziePath];
             } else {
+                self.exceedinged = NO;
                 [self layerBroke];
             }
             break;
         }
-            
+        
+        case UIGestureRecognizerStateBegan:
+            self.exceedinged = YES;
         case UIGestureRecognizerStateEnded: {
             CGFloat distance = [self getDistanceBetweenDots];
             if (distance >= MAXDISTANCE) {
@@ -162,28 +170,28 @@
 
 #pragma mark - 还原到原位置
 - (void)placeMoveDot {
-    [UIView animateWithDuration: 0.25f
-                          delay: 0
-         usingSpringWithDamping: 0.5
-          initialSpringVelocity: 0
-                        options: UIViewAnimationOptionBeginFromCurrentState
-                     animations: ^{
-                         [CATransaction begin];
-                         [CATransaction setDisableActions:YES];
-                         self.moveDot.position = CGPointMake((self.frame.size.width/2-self.moveDot.position.x)*0.25+self.frame.size.width/2, (self.frame.size.height/2-self.moveDot.position.y)*0.25+self.frame.size.height/2);
-                         self.shapLayer.hidden = YES;
-                         self.fixedDot.hidden = YES;
-                         self.moveDot.backgroundColor = BARThemeColor.CGColor;
-                         [CATransaction commit];
-                     }
-                     completion: ^(BOOL finished) {
-                         [UIView animateWithDuration:0.1f delay:0 usingSpringWithDamping:0.1 initialSpringVelocity:0.3 options:UIViewAnimationOptionCurveEaseIn animations:^{
-                             self.moveDot.position = CGPointMake(self.frame.size.width/2, self.frame.size.width/2);
-                         } completion:^(BOOL finished) {
-                             self.fixedDot.hidden = NO;
-                         }];
-                         
-                     }];
+        [UIView animateWithDuration: 0.25f
+                              delay: 0
+             usingSpringWithDamping: 0.5
+              initialSpringVelocity: 0
+                            options: UIViewAnimationOptionBeginFromCurrentState
+                         animations: ^{
+                             [CATransaction begin];
+                             [CATransaction setDisableActions:YES];
+                             self.moveDot.position = CGPointMake((self.frame.size.width/2-self.moveDot.position.x)*0.25+self.frame.size.width/2, (self.frame.size.height/2-self.moveDot.position.y)*0.25+self.frame.size.height/2);
+                             self.shapLayer.hidden = YES;
+                             self.fixedDot.hidden = YES;
+                             self.moveDot.backgroundColor = BARThemeColor.CGColor;
+                             [CATransaction commit];
+                         }
+                         completion: ^(BOOL finished) {
+                             [UIView animateWithDuration:0.1f delay:0 usingSpringWithDamping:0.1 initialSpringVelocity:0.3 options:UIViewAnimationOptionCurveEaseIn animations:^{
+                                 self.moveDot.position = CGPointMake(self.frame.size.width/2, self.frame.size.width/2);
+                             } completion:^(BOOL finished) {
+                                 self.fixedDot.hidden = NO;
+                             }];
+                             
+         }];
 }
 
 - (CALayer *)moveDot{

@@ -37,6 +37,7 @@ class BARSlimeDotView_Swift: UIView {
         _shapLayer.position = CGPoint.init(x: 0, y: 0);
         return _shapLayer
     }()
+    var isExceedinged:Bool = true
     
     override init(frame: CGRect) {
         
@@ -114,14 +115,20 @@ class BARSlimeDotView_Swift: UIView {
                 scale = max(scale, FIXEDOT_SCALE_MIN)
                 CATransaction.begin()
                 CATransaction.setDisableActions(true)
-                self.fixedDot.isHidden = false
+                
                 self.fixedDot.setAffineTransform(CGAffineTransform(scaleX: scale, y: scale))
                 CATransaction.commit()
+                if self.isExceedinged{
+                   self.reloadBeziePath()
+                   self.fixedDot.isHidden = false
+                }
                 
-                self.reloadBeziePath()
             } else{
+                self.isExceedinged = false
                 self.layerBroke()
             }
+        case UIGestureRecognizerState.began:
+            self.isExceedinged = true
         case UIGestureRecognizerState.ended:
             let distance = self.getDistanceBetweenDots()
             if distance >= MAXDISTANCE{
